@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ここを追加 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  <title>ゲーミフィケーションタスク管理</title>
+</head>
+
+<body>
+  <h1>ゲーミフィケーションタスク管理</h1>
+
+  <p>現在のポイント: <span id="points">0</span> pt</p>
+  <button onclick="location.href='rewards.html'">ご褒美管理へ</button>
+  <button onclick="location.href='archive.html'">アーカイブを見る</button>
+
+  <hr>
+
+  <h2>ミッション</h2>
+  <div id="missions">
+    <h3>デイリーミッション</h3>
+    <ul id="daily-mission-list"></ul>
+    <button id="daily-bonus-button" disabled>
+      デイリーボーナスを受け取る (+20pt)
+    </button>
+
+    <h3>ウィークリーミッション</h3>
+    <ul id="weekly-mission-list"></ul>
+    <button id="weekly-bonus-button" disabled>
+      ウィークリーボーナスを受け取る (+50pt)
+    </button>
+  </div>
+
+  <hr>
+
+  <h2>タスク追加</h2>
+<form id="task-template-form">
+  <input type="text" id="task-template-name" placeholder="タスク名（例：英語30分）" required>
+  <input type="number" id="task-template-time" placeholder="時間(分)" required>
+  <!-- ▼ ここ追加 -->
+  <input type="text" id="task-template-category" placeholder="カテゴリ（例：勉強・運動など）">
+  <!-- ▲ ここ追加 -->
+  <button type="submit">テンプレ追加</button>
+</form>
+
+
+  <ul id="task-template-list"></ul>
+
+  <hr>
+
+
+
+  <h2>タスク一覧</h2>
+  <ul id="task-list"></ul>
+
+  <script src="app.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("service-worker.js")
+        .then((reg) => {
+          console.log("Service Worker registered:", reg);
+        })
+        .catch((err) => {
+          console.log("Service Worker registration failed:", err);
+        });
+    });
+  }
+</script>
+</body>
+</html>

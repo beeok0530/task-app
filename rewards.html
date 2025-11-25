@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ご褒美管理</title>
+</head>
+<body>
+  <h1>ご褒美管理</h1>
+
+  <p>現在のポイント: <span id="points">0</span> pt</p>
+  <button onclick="location.href='index.html'">← タスク画面に戻る</button>
+  <button onclick="location.href='archive.html'">アーカイブを見る →</button>
+
+  <hr>
+
+  <h2>テンプレご褒美を追加</h2>
+  <form id="template-form">
+    <input type="text" id="template-name" placeholder="ご褒美名（例：ゲーム30分）" required>
+    <input type="number" id="template-cost" placeholder="必要ポイント" min="1" required>
+    <button type="submit">テンプレ追加</button>
+  </form>
+
+  <h2>テンプレご褒美（ここから購入）</h2>
+  <ul id="template-reward-list"></ul>
+
+  <h2>所持しているご褒美</h2>
+  <ul id="owned-reward-list"></ul>
+
+  <script src="rewards.js"></script>
+</body>
+</html>
