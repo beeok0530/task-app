@@ -8,6 +8,10 @@ let rewardHistory = [];   // 使用済みご褒美
 let templateRewards = []; // テンプレご褒美
 let templateTasks = [];   // タスクテンプレも消さないよう保持
 let missions = null;      // タスク側で使うミッション状態
+let level = 1; // ★追加
+let exp = 0;   // ★追加
+
+
 
 // ---- 状態の読み込み・保存 ----
 function loadState() {
@@ -18,6 +22,9 @@ function loadState() {
     const data = JSON.parse(raw);
 
     if (typeof data.points === "number") points = data.points;
+    if (typeof data.level === "number") level = data.level;
+if (typeof data.exp === "number") exp = data.exp;
+
 
     if (Array.isArray(data.tasks)) {
       tasks = data.tasks.map(t => {
@@ -60,15 +67,18 @@ function loadState() {
 }
 
 function saveState() {
-  const data = {
-    points,
-    tasks,
-    rewards,
-    rewardHistory,
-    templateRewards,
-    templateTasks,
-    missions
-  };
+const data = {
+  points,
+  level,   // ★追加
+  exp,     // ★追加
+  tasks,
+  rewards,
+  rewardHistory,
+  templateRewards,
+  templateTasks,
+  missions
+};
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 

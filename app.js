@@ -29,6 +29,9 @@ const WEEKLY_FULL_BONUS_REWARD = 50;
 
 // 状態
 let points = 0;
+const LEVEL_EXP_BASE = 100; // レベルごとの基礎必要経験値
+let level = 1;
+let exp = 0;
 let tasks = [];
 let rewards = [];         // 所持中ご褒美
 let rewardHistory = [];   // 使用済みご褒美
@@ -110,15 +113,17 @@ function resetWeeklyIfNeeded() {
 // 状態の保存・読み込み
 // ==============================
 function saveState() {
-  const data = {
-    points,
-    tasks,
-    rewards,
-    rewardHistory,
-    templateRewards,
-    templateTasks,  // ★タスクテンプレも保存
-    missions
-  };
+const data = {
+  points,
+  level,   // ★追加
+  exp,     // ★追加
+  tasks,
+  rewards,
+  rewardHistory,
+  templateRewards,
+  templateTasks,
+  missions
+};
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   console.log("状態を保存:", data);
 }
@@ -135,6 +140,9 @@ function loadState() {
     const data = JSON.parse(raw);
 
     if (typeof data.points === "number") points = data.points;
+    if (typeof data.level === "number") level = data.level;
+if (typeof data.exp === "number") exp = data.exp;
+
 
     if (Array.isArray(data.tasks)) {
       tasks = data.tasks.map(t => {
@@ -194,6 +202,8 @@ function loadState() {
 console.log("app.js 読み込まれたよ！");
 
 const pointsEl = document.getElementById("points");
+const levelEl  = document.getElementById("level"); // ★追加
+const expEl    = document.getElementById("exp");   // ★追加
 
 // タスク関係
 const taskForm = document.getElementById("task-form");
@@ -219,11 +229,42 @@ const weeklyBonusButton = document.getElementById("weekly-bonus-button");
 // 初期読み込み
 loadState();
 if (pointsEl) pointsEl.textContent = points;
+if (levelEl) levelEl.textContent = level; // ★追加
+if (expEl) expEl.textContent = exp;       // ★追加
 
 // 初期表示
 renderTasks();
-renderTaskTemplates(); // ★テンプレ表示
+renderTaskTemplates();
 renderMissions();
+
+function getExpNeededForNextLevel() {
+  return LEVEL_EXP_BASE * level;
+}
+
+function addExperience(amount) {
+  exp += amount;
+  let leveledUp = false;
+
+  while (exp >= getExpNeededForNextLevel()) {
+    exp -= getExpNeededForNextLevel();
+    level += 1;
+    leveledUp = true;
+  }
+
+  if (expEl) expEl.textContent = exp;
+  if (levelEl) levelEl.textContent = level;
+
+  if (leveledUp) {
+    alert(`レベル ${level} に上がった！🎉`);
+  }
+}
+
+function addPointsAndExp(amount) {
+  points += amount;
+  if (pointsEl) pointsEl.textContent = points;
+  addExperience(amount);
+  saveState();
+}
 
 // ==============================
 // ポイント計算（タスク）
@@ -234,12 +275,11 @@ function addPointsForTask(minutes) {
   const base = minutes * BASE_RATE;
   const gained = Math.min(base, MAX_PER_TASK);
 
-  points += gained;
-  if (pointsEl) pointsEl.textContent = points;
-  saveState();
+  addPointsAndExp(gained); // ★ここでポイント＆経験値をまとめて付与
 
   alert(`タスク完了！ +${gained}pt 獲得しました 🎉`);
 }
+
 
 // ==============================
 // タスクテンプレ関連 ★追加
@@ -519,12 +559,11 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.daily.taskRewardClaimed && missions.daily.tasksDone >= DAILY_TASK_TARGET) {
-        points += DAILY_TASK_REWARD;
-        missions.daily.taskRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
-        renderMissions();
-      }
+  addPointsAndExp(DAILY_TASK_REWARD);  // ★変更
+  missions.daily.taskRewardClaimed = true;
+  renderMissions();
+}
+
     });
     d1.appendChild(btn);
   } else if (d1Rewarded) {
@@ -547,10 +586,8 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.daily.minutesRewardClaimed && missions.daily.minutes >= DAILY_MINUTES_TARGET) {
-        points += DAILY_MINUTES_REWARD;
+       addPointsAndExp(DAILY_MINUTES_REWARD); // ★ここだけ置き換える！
         missions.daily.minutesRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
         renderMissions();
       }
     });
@@ -575,10 +612,8 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.daily.rewardUseRewardClaimed && missions.daily.rewardsUsed >= DAILY_REWARD_USE_TARGET) {
-        points += DAILY_REWARD_USE_REWARD;
+       addPointsAndExp(DAILY_REWARD_USE_REWARD);
         missions.daily.rewardUseRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
         renderMissions();
       }
     });
@@ -622,10 +657,8 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.weekly.taskRewardClaimed && missions.weekly.tasksDone >= WEEKLY_TASK_TARGET) {
-        points += WEEKLY_TASK_REWARD;
+        addPointsAndExp(WEEKLY_TASK_REWARD);
         missions.weekly.taskRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
         renderMissions();
       }
     });
@@ -649,10 +682,8 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.weekly.minutesRewardClaimed && missions.weekly.minutes >= WEEKLY_MINUTES_TARGET) {
-        points += WEEKLY_MINUTES_REWARD;
+        addPointsAndExp(WEEKLY_MINUTES_REWARD);
         missions.weekly.minutesRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
         renderMissions();
       }
     });
@@ -676,10 +707,8 @@ function renderMissions() {
     btn.style.marginLeft = "8px";
     btn.addEventListener("click", () => {
       if (!missions.weekly.rewardUseRewardClaimed && missions.weekly.rewardsUsed >= WEEKLY_REWARD_USE_TARGET) {
-        points += WEEKLY_REWARD_USE_REWARD;
+        addPointsAndExp(WEEKLY_REWARD_USE_REWARD);
         missions.weekly.rewardUseRewardClaimed = true;
-        if (pointsEl) pointsEl.textContent = points;
-        saveState();
         renderMissions();
       }
     });
